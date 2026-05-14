@@ -2,6 +2,8 @@
 
 Sammlung statischer, einseitiger Web-Übungen (HTML/CSS/JavaScript) für den Mathematikunterricht. Kein Build-Schritt; geeignet für **GitHub Pages** und Verlinkung aus **Moodle**.
 
+**Öffentliche Seite:** [https://flxln.github.io/mathematik-spa-tools/](https://flxln.github.io/mathematik-spa-tools/) (nach dem ersten Pages-Build ggf. einige Minuten warten).
+
 ## Inhalt
 
 | Seite | Beschreibung |
@@ -19,10 +21,13 @@ Sammlung statischer, einseitiger Web-Übungen (HTML/CSS/JavaScript) für den Mat
 
 ## GitHub Pages
 
-1. Repository auf GitHub anlegen und diesen Ordner als Inhalt pushen (Branch `main`).
-2. Unter *Settings → Pages*: Quelle **Deploy from branch**, Branch **main**, Ordner **/ (root)**.
-3. Öffentliche Basis-URL hat die Form: `https://<benutzername>.github.io/<repository>/`  
-   Einzel-Tools: z. B. `…/bruch_kopfrechnen_trainer.html`.
+Das Repository ist mit Pages verbunden (Branch `main`, Ordner `/`). Basis-URL:
+
+- **https://flxln.github.io/mathematik-spa-tools/**
+
+Einzel-Tools (Beispiel): `https://flxln.github.io/mathematik-spa-tools/bruch_kopfrechnen_trainer.html`
+
+Bei einem Fork: unter *Settings → Pages* dieselbe Quelle wählen und die URL anpassen.
 
 ## Moodle
 
