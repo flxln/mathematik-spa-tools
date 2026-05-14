@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mathematik-SPA-Tools</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    body.mst-page {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-left: 1rem;
+      padding-right: 1rem;
+      padding-bottom: 2rem;
+      padding-top: max(4rem, calc(2.65rem + env(safe-area-inset-top) + 0.75rem));
+    }
+    .mst-catalog {
+      width: min(640px, 100%);
+      margin-top: 0.5rem;
+    }
+    .mst-catalog h1 {
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: #93c5fd;
+      margin: 0 0 0.35rem;
+    }
+    .mst-catalog > p.lead {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin: 0 0 1.5rem;
+    }
+    .mst-catalog ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .mst-catalog li a {
+      display: block;
+      padding: 1rem 1.15rem;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 0.75rem;
+      color: #e2e8f0;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .mst-catalog li a:hover {
+      background: #273449;
+      border-color: #64748b;
+      color: #fff;
+    }
+    .mst-catalog li a span.desc {
+      display: block;
+      margin-top: 0.35rem;
+      font-weight: 400;
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body class="mst-page">
+  <nav class="mst-nav" aria-label="Hauptnavigation">
+    <span class="mst-nav__title">Mathematik-SPA-Tools</span>
+  </nav>
+  <main class="mst-catalog">
+    <h1>Mathematik-SPA-Tools</h1>
+    <p class="lead">Statische Übungs- und Übersichtsseiten für den Mathematikunterricht (Oberschule). Für Moodle als URL-Ressource oder Einbettung nutzbar, sobald das Projekt über GitHub Pages bereitsteht.</p>
+    <ul>
+      <li>
+        <a href="bruch_kopfrechnen_trainer.html">Kopfrechnen: Bruchrechnung<span class="desc">Einstellbare Klassenstufe, Bruchaufgaben im Kopf.</span></a>
+      </li>
+      <li>
+        <a href="gemischte_aufgaben_trainer.html">Trainer: gemischte Rechenaufgaben<span class="desc">Punkt vor Strich, mit und ohne Klammern.</span></a>
+      </li>
+      <li>
+        <a href="malfolgen_trainer.html">Malfolgen-Trainer<span class="desc">Multiplikationsfolgen üben.</span></a>
+      </li>
+      <li>
+        <a href="winkel_gerade_kreuzungen_progression.html">Winkel an geraden Kreuzungen<span class="desc">Progression und Lehrplanbezug (Übersicht).</span></a>
+      </li>
+    </ul>
+  </main>
+</body>
+</html>

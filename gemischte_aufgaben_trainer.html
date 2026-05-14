@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trainer: gemischte Rechenaufgaben</title>
+<style>
+  :root {
+    --yellow:       #ffea00;
+    --black:        #000;
+    --white:        #fff;
+    --error:        #c0392b;
+    --success:      #1a8a3f;
+    --glass-white:  rgba(255, 255, 255, 0.62);
+    --glass-border: rgba(255, 255, 255, 0.80);
+    --glass-yellow: rgba(255, 234, 0, 0.72);
+    --glass-shadow: 0 24px 64px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.06);
+    --blur-strong:  blur(32px) saturate(200%);
+    --blur-mid:     blur(20px) saturate(180%);
+    --blur-soft:    blur(12px) saturate(160%);
+    --radius-card:  28px;
+    --radius-el:    18px;
+    --radius-input: 14px;
+    --radius-pill:  999px;
+    --touch:        48px;
+    --space-block-lg:  1.75rem;
+    --space-block-md:  1.25rem;
+    --space-block:     1rem;
+    --space-actions:   1.5rem;
+    --space-step-h2:   1.1rem;
+    --space-label:     0.45rem;
+    --gap-options:     0.5rem;
+    --gap-buttons:     0.6rem;
+    --gap-actions:     0.75rem;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: system-ui, -apple-system, 'SF Pro Display', 'Segoe UI', sans-serif;
+    line-height: 1.5;
+    color: var(--black);
+    min-height: 100vh;
+    padding: 1.25rem;
+    -webkit-tap-highlight-color: transparent;
+    background-color: #fffbe6;
+    background-image:
+      radial-gradient(ellipse 120% 80% at 0% 0%, rgba(255,234,0,0.55) 0%, transparent 55%),
+      radial-gradient(ellipse 100% 70% at 100% 100%, rgba(255,200,0,0.45) 0%, transparent 50%),
+      radial-gradient(ellipse 80% 60% at 100% 0%, rgba(255,245,130,0.35) 0%, transparent 45%),
+      radial-gradient(circle at 50% 50%, rgba(255,255,200,0.3) 0%, transparent 60%);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .container {
+    width: min(560px, 100%);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    background: var(--glass-white);
+    -webkit-backdrop-filter: var(--blur-strong);
+    backdrop-filter: var(--blur-strong);
+  }
+
+  .site-header {
+    background: var(--glass-yellow);
+    -webkit-backdrop-filter: var(--blur-mid);
+    backdrop-filter: var(--blur-mid);
+    padding: 1.25rem 1.75rem 1.15rem;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    background-image: linear-gradient(to bottom, rgba(255,255,255,0.5) 0%, transparent 100%), linear-gradient(135deg, var(--glass-yellow) 0%, var(--glass-yellow) 100%);
+  }
+
+  .site-header h1 {
+    font-size: 1.45rem;
+    font-weight: 800;
+    letter-spacing: -0.35px;
+    margin: 0;
+  }
+
+  .site-header .subtitle {
+    font-size: 0.85rem;
+    color: rgba(0,0,0,0.55);
+    margin-top: 0.35rem;
+  }
+
+  .form-body {
+    padding: 1.5rem 1.75rem 1.75rem;
+  }
+
+  .section-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.5rem;
+    color: rgba(0,0,0,0.65);
+  }
+
+  .field {
+    margin-bottom: var(--space-block);
+  }
+
+  .field > label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 700;
+    margin-bottom: var(--space-label);
+  }
+
+  .field .inputs {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--gap-buttons);
+  }
+
+  .sep {
+    color: rgba(0,0,0,0.45);
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  input[type="number"],
+  input[type="range"] {
+    font-family: inherit;
+  }
+
+  input[type="number"] {
+    width: 4.5rem;
+    min-height: var(--touch);
+    padding: 0.45rem 0.6rem;
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: var(--radius-input);
+    background: rgba(255,255,255,0.55);
+    -webkit-backdrop-filter: var(--blur-soft);
+    backdrop-filter: var(--blur-soft);
+    color: var(--black);
+    font-size: 1rem;
+    text-align: center;
+    outline: none;
+    transition: box-shadow 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), border-color 0.2s;
+  }
+
+  input[type="number"]:focus {
+    border-color: rgba(255,234,0,0.85);
+    box-shadow: 0 0 0 3px rgba(255,234,0,0.2);
+  }
+
+  input[type="number"].wide {
+    width: 5.5rem;
+  }
+
+  .range-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  input[type="range"] {
+    flex: 1;
+    min-width: 140px;
+    accent-color: var(--yellow);
+  }
+
+  .range-value {
+    font-weight: 700;
+    min-width: 3rem;
+    text-align: right;
+  }
+
+  .op-toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-buttons);
+  }
+
+  .op-btn {
+    min-height: var(--touch);
+    min-width: 3.25rem;
+    padding: 0 1rem;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: var(--radius-el);
+    background: rgba(255,255,255,0.55);
+    -webkit-backdrop-filter: var(--blur-soft);
+    backdrop-filter: var(--blur-soft);
+    font-size: 1.25rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s, background 0.2s;
+  }
+
+  .op-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  .op-btn:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  .op-btn.selected {
+    background: var(--glass-yellow);
+    -webkit-backdrop-filter: var(--blur-mid);
+    backdrop-filter: var(--blur-mid);
+    border-color: rgba(0,0,0,0.08);
+    font-weight: 800;
+    box-shadow: 0 4px 14px rgba(255,234,0,0.45);
+  }
+
+  .hint {
+    font-size: 0.8rem;
+    color: rgba(0,0,0,0.38);
+    margin-top: 0.35rem;
+  }
+
+  .error-message {
+    display: none;
+    margin-top: 0.9rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-input);
+    border: 1px solid rgba(192,57,43,0.35);
+    background: rgba(192,57,43,0.08);
+    color: var(--error);
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .error-message.visible {
+    display: block;
+  }
+
+  .step-actions {
+    margin-top: var(--space-actions);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-actions);
+    justify-content: center;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: var(--touch);
+    padding: 0 1.75rem;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: var(--radius-pill);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s, background 0.2s;
+  }
+
+  .btn:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  .btn-primary {
+    background: var(--glass-yellow);
+    -webkit-backdrop-filter: var(--blur-mid);
+    backdrop-filter: var(--blur-mid);
+    box-shadow: 0 6px 20px rgba(255,234,0,0.35), 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(255,234,0,0.45), 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  .btn-secondary {
+    background: rgba(255,255,255,0.72);
+    -webkit-backdrop-filter: var(--blur-soft);
+    backdrop-filter: var(--blur-soft);
+  }
+
+  .btn-secondary:hover {
+    background: rgba(255,255,255,0.92);
+    transform: translateY(-1px);
+  }
+
+  .btn-success {
+    background: rgba(26,138,63,0.15);
+    border-color: rgba(26,138,63,0.35);
+    color: var(--success);
+  }
+
+  .btn-success:hover:not(:disabled) {
+    background: rgba(26,138,63,0.22);
+    transform: translateY(-1px);
+  }
+
+  .btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Phasen */
+  .phase {
+    display: none;
+    flex-direction: column;
+  }
+
+  .phase.active {
+    display: flex;
+  }
+
+  #setup.phase.active {
+    display: block;
+  }
+
+  /* Display */
+  .display-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-block-md);
+    text-align: center;
+    padding: 0.5rem 0 0.25rem;
+  }
+
+  .counter {
+    font-size: 0.9rem;
+    color: rgba(0,0,0,0.55);
+    font-weight: 600;
+  }
+
+  .task-text {
+    font-size: clamp(2.4rem, 9vw, 4.4rem);
+    font-weight: 800;
+    letter-spacing: -0.4px;
+    color: var(--black);
+    min-height: 1.15em;
+    line-height: 1.15;
+    word-break: break-all;
+  }
+
+  .progress-bar-wrap {
+    width: 100%;
+    height: 8px;
+    background: rgba(255,255,255,0.65);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--yellow);
+    border-radius: var(--radius-pill);
+    transition: width linear;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
+  }
+
+  .kbd-hint {
+    font-size: 0.8rem;
+    color: rgba(0,0,0,0.38);
+    margin-top: 0.25rem;
+  }
+
+  /* Ergebnisse */
+  .results h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: var(--space-step-h2);
+    letter-spacing: -0.3px;
+  }
+
+  .task-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-options);
+  }
+
+  .task-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    background: rgba(255,255,255,0.55);
+    -webkit-backdrop-filter: var(--blur-soft);
+    backdrop-filter: var(--blur-soft);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-el);
+    border: 1px solid rgba(0,0,0,0.06);
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .task-row .answer {
+    min-width: 2.5rem;
+    text-align: left;
+    color: var(--success);
+    font-weight: 800;
+    visibility: hidden;
+  }
+
+  .task-row .answer.visible {
+    visibility: visible;
+  }
+
+  .site-footer {
+    text-align: center;
+    padding: 0 1.75rem 1.25rem;
+    font-size: 0.8rem;
+    color: rgba(0,0,0,0.38);
+  }
+</style>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="mst-page">
+<nav class="mst-nav" aria-label="Hauptnavigation">
+  <a href="index.html" class="mst-nav__link">Zur Übersicht</a>
+</nav>
+
+<div class="container">
+  <header class="site-header">
+    <h1>Trainer: gemischte Rechenaufgaben</h1>
+    <p class="subtitle">Punkt vor Strich – mit und ohne Klammern (Kopfrechen-Modus)</p>
+  </header>
+
+  <div class="form-body">
+
+    <!-- Setup -->
+    <div class="phase active" id="setup">
+      <span class="section-label">Operatoren</span>
+      <div class="field" style="margin-bottom: var(--space-block-md);">
+        <div class="op-toggles" id="opToggles" role="group" aria-label="Rechenarten">
+          <button type="button" class="op-btn selected" data-op="+" aria-pressed="true">+</button>
+          <button type="button" class="op-btn selected" data-op="-" aria-pressed="true">−</button>
+          <button type="button" class="op-btn selected" data-op="*" aria-pressed="true">·</button>
+          <button type="button" class="op-btn selected" data-op="/" aria-pressed="true">:</button>
+        </div>
+        <p class="hint">Mindestens eine Rechenart muss aktiv sein.</p>
+      </div>
+
+      <div class="field">
+        <label for="addMin">Zahlen bei + und − (von … bis)</label>
+        <div class="inputs">
+          <input type="number" id="addMin" value="1" min="1" max="99" inputmode="numeric">
+          <span class="sep">bis</span>
+          <input type="number" id="addMax" value="20" min="1" max="99" inputmode="numeric">
+        </div>
+        <p class="hint">Gilt für beide Summanden bzw. Minuend und Subtrahend.</p>
+      </div>
+
+      <div class="field">
+        <label for="mulMin">Faktoren bei Multiplikation (·) (von … bis)</label>
+        <div class="inputs">
+          <input type="number" id="mulMin" value="2" min="1" max="99" inputmode="numeric">
+          <span class="sep">bis</span>
+          <input type="number" id="mulMax" value="10" min="1" max="99" inputmode="numeric">
+        </div>
+        <p class="hint">Nur für die beiden Faktoren einer Malaufgabe – so bleiben Produkte kopfrechnbar.</p>
+      </div>
+
+      <div class="field">
+        <label for="divMin">Zahlen bei Division (:) (von … bis)</label>
+        <div class="inputs">
+          <input type="number" id="divMin" value="2" min="1" max="99" inputmode="numeric">
+          <span class="sep">bis</span>
+          <input type="number" id="divMax" value="12" min="1" max="99" inputmode="numeric">
+        </div>
+        <p class="hint">Gilt für Zähler und Nenner (ohne Rest). Nenner 0 wird nie erzeugt. Division mit gleichem Zähler und Nenner (z. B. 6:6) und solche Zwischenschritte werden ausgeschlossen.</p>
+      </div>
+
+      <div class="field">
+        <label>Anzahl Operanden (min … max)</label>
+        <div class="inputs">
+          <input type="number" id="nMin" value="3" min="2" max="4" inputmode="numeric">
+          <span class="sep">bis</span>
+          <input type="number" id="nMax" value="3" min="2" max="4" inputmode="numeric">
+        </div>
+        <p class="hint">Zwischen 2 und 4 Zahlen pro Aufgabe. Sind Strichrechnung (+/−) und Punktrechnung (· und :) aktiv und stehen mindestens drei Operanden, wird eine gemischte Operatorfolge bevorzugt.</p>
+      </div>
+
+      <div class="field">
+        <label for="pKlammer">Anteil Aufgaben mit Klammer (sinnvoll)</label>
+        <div class="range-row">
+          <input type="range" id="pKlammer" min="0" max="100" value="50" step="5">
+          <span class="range-value" id="pKlammerVal">50&nbsp;%</span>
+        </div>
+        <p class="hint">Nur bei drei oder vier Operanden; Klammern nur, wenn sie das Ergebnis gegenüber „Punkt vor Strich“ ändern.</p>
+      </div>
+
+      <div class="field">
+        <label for="taskCount">Anzahl Aufgaben</label>
+        <div class="inputs">
+          <input type="number" class="wide" id="taskCount" value="10" min="1" max="50" inputmode="numeric">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="duration">Anzeigedauer (Sekunden)</label>
+        <div class="inputs">
+          <input type="number" class="wide" id="duration" value="6" min="1" max="30" step="1" inputmode="numeric">
+        </div>
+      </div>
+
+      <div id="setupError" class="error-message" role="alert"></div>
+
+      <div class="step-actions">
+        <button type="button" class="btn btn-primary" id="btnStart">Start</button>
+      </div>
+    </div>
+
+    <!-- Display -->
+    <div class="phase" id="display">
+      <div class="display-inner">
+        <div class="counter" id="counter"></div>
+        <div class="task-text" id="taskText" aria-live="polite"></div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <p class="kbd-hint"><kbd>Leertaste</kbd> nächste Aufgabe · <kbd>Esc</kbd> abbrechen</p>
+      </div>
+    </div>
+
+    <!-- Ergebnisse -->
+    <div class="phase" id="results">
+      <h2>Übersicht</h2>
+      <div class="task-list" id="taskList"></div>
+      <div class="step-actions">
+        <button type="button" class="btn btn-success" id="btnReveal">Lösungen anzeigen</button>
+        <button type="button" class="btn btn-secondary" id="btnReset">Neu starten</button>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="site-footer">Lokal im Browser · keine Datenspeicherung</footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  let tasks = [];
+  let timer = null;
+  let sequenceToken = 0;
+  let displayIdx = 0;
+  let currentDur = 6;
+
+  function rand(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function pick(arr) {
+    return arr[rand(0, arr.length - 1)];
+  }
+
+  function showPhase(id) {
+    ['setup', 'display', 'results'].forEach(function (pid) {
+      const el = document.getElementById(pid);
+      el.classList.toggle('active', pid === id);
+    });
+  }
+
+  function getSelectedOps() {
+    const out = [];
+    document.querySelectorAll('.op-btn.selected').forEach(function (btn) {
+      const c = btn.getAttribute('data-op');
+      if (c) out.push(c);
+    });
+    return out;
+  }
+
+  function tokenize(expr) {
+    const tokens = [];
+    let i = 0;
+    while (i < expr.length) {
+      const ch = expr[i];
+      if (ch === ' ' || ch === '\t') { i++; continue; }
+      if (ch >= '0' && ch <= '9') {
+        let j = i;
+        while (j < expr.length && expr[j] >= '0' && expr[j] <= '9') j++;
+        tokens.push(parseInt(expr.slice(i, j), 10));
+        i = j;
+        continue;
+      }
+      if (ch === '(' || ch === ')') {
+        tokens.push(ch);
+        i++;
+        continue;
+      }
+      if ('+-*/'.indexOf(ch) !== -1) {
+        tokens.push(ch);
+        i++;
+        continue;
+      }
+      throw new Error('Unerwartetes Zeichen: ' + ch);
+    }
+    return tokens;
+  }
+
+  function precedence(op) {
+    if (op === '+' || op === '-') return 1;
+    if (op === '*' || op === '/') return 2;
+    return 0;
+  }
+
+  function toRpn(tokens) {
+    const output = [];
+    const stack = [];
+    for (let t = 0; t < tokens.length; t++) {
+      const tok = tokens[t];
+      if (typeof tok === 'number') {
+        output.push(tok);
+        continue;
+      }
+      if (tok === '(') {
+        stack.push(tok);
+        continue;
+      }
+      if (tok === ')') {
+        while (stack.length && stack[stack.length - 1] !== '(') {
+          output.push(stack.pop());
+        }
+        if (!stack.length || stack.pop() !== '(') throw new Error('Klammerfehler');
+        continue;
+      }
+      if ('+-*/'.indexOf(tok) !== -1) {
+        while (stack.length) {
+          const top = stack[stack.length - 1];
+          if (top === '(') break;
+          if ('+-*/'.indexOf(top) === -1) break;
+          if (precedence(top) >= precedence(tok)) output.push(stack.pop());
+          else break;
+        }
+        stack.push(tok);
+        continue;
+      }
+      throw new Error('Unbekanntes Token');
+    }
+    while (stack.length) {
+      const x = stack.pop();
+      if (x === '(' || x === ')') throw new Error('Klammerfehler');
+      output.push(x);
+    }
+    return output;
+  }
+
+  function applyOp(a, b, op) {
+    if (op === '+') return a + b;
+    if (op === '-') {
+      const r = a - b;
+      return r;
+    }
+    if (op === '*') return a * b;
+    if (op === '/') {
+      if (b === 0) return null;
+      if (a === b) return null;
+      if (a % b !== 0) return null;
+      return a / b;
+    }
+    return null;
+  }
+
+  /** @returns {{ result: number, intermediates: number[] } | null} */
+  function evalRpn(rpn) {
+    const stack = [];
+    const intermediates = [];
+    for (let i = 0; i < rpn.length; i++) {
+      const tok = rpn[i];
+      if (typeof tok === 'number') {
+        stack.push(tok);
+        continue;
+      }
+      if (stack.length < 2) return null;
+      const right = stack.pop();
+      const left = stack.pop();
+      const r = applyOp(left, right, tok);
+      if (r === null || !Number.isFinite(r) || !Number.isInteger(r) || r < 0) return null;
+      intermediates.push(r);
+      stack.push(r);
+    }
+    if (stack.length !== 1) return null;
+    return { result: stack[0], intermediates: intermediates };
+  }
+
+  function evaluateAscii(expr) {
+    try {
+      const tokens = tokenize(expr);
+      const rpn = toRpn(tokens);
+      return evalRpn(rpn);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function buildPlainExpr(nums, ops) {
+    let s = String(nums[0]);
+    for (let i = 0; i < ops.length; i++) {
+      s += ops[i] + String(nums[i + 1]);
+    }
+    return s;
+  }
+
+  /** wrapIdx: Klammer um nums[wrapIdx] ops[wrapIdx] nums[wrapIdx+1] */
+  function buildParenExpr(nums, ops, wrapIdx) {
+    const n = nums.length;
+    if (wrapIdx === 0) {
+      let s = '(' + nums[0] + ops[0] + nums[1] + ')';
+      for (let i = 1; i < n - 1; i++) s += ops[i] + nums[i + 1];
+      return s;
+    }
+    let s = String(nums[0]);
+    for (let i = 0; i < wrapIdx - 1; i++) {
+      s += ops[i] + nums[i + 1];
+    }
+    s += ops[wrapIdx - 1] + '(' + nums[wrapIdx] + ops[wrapIdx] + nums[wrapIdx + 1] + ')';
+    for (let i = wrapIdx + 1; i < n - 1; i++) {
+      s += ops[i] + nums[i + 1];
+    }
+    return s;
+  }
+
+  function toDisplayString(asciiExpr) {
+    let out = '';
+    for (let i = 0; i < asciiExpr.length; i++) {
+      const c = asciiExpr[i];
+      if (c === '*') out += '·';
+      else if (c === '/') out += ':';
+      else if (c === '-') out += '−';
+      else out += c;
+    }
+    return out;
+  }
+
+  function meaningfulWrapIndices(nums, ops, plainAscii) {
+    const plainVal = evaluateAscii(plainAscii);
+    if (!plainVal) return [];
+    const n = nums.length;
+    const candidates = [];
+    for (let w = 0; w < n - 1; w++) {
+      const ex = buildParenExpr(nums, ops, w);
+      const v = evaluateAscii(ex);
+      if (!v) continue;
+      if (v.result !== plainVal.result) candidates.push(w);
+    }
+    return candidates;
+  }
+
+  function opPoolSpansStrichUndPunkt(opPool) {
+    let strich = false;
+    let punkt = false;
+    for (let i = 0; i < opPool.length; i++) {
+      if (opPool[i] === '+' || opPool[i] === '-') strich = true;
+      if (opPool[i] === '*' || opPool[i] === '/') punkt = true;
+    }
+    return strich && punkt;
+  }
+
+  /**
+   * Zieht eine Operatorfolge; wenn möglich und requireMix, mindestens ein Strich-
+   * und ein Punktoperator (bei n ≥ 3).
+   * @returns {string[] | null}
+   */
+  function sampleOps(opPool, n, requireMix) {
+    const need = requireMix && n >= 3 && opPoolSpansStrichUndPunkt(opPool);
+    let last = null;
+    for (let t = 0; t < 200; t++) {
+      const ops = [];
+      for (let i = 0; i < n - 1; i++) ops.push(pick(opPool));
+      last = ops;
+      if (!need) return ops;
+      let strich = false;
+      let punkt = false;
+      for (let j = 0; j < ops.length; j++) {
+        if (ops[j] === '+' || ops[j] === '-') strich = true;
+        if (ops[j] === '*' || ops[j] === '/') punkt = true;
+      }
+      if (strich && punkt) return ops;
+    }
+    return last;
+  }
+
+  /** Ausdrucksbaum aus Zahlen und Operatoren (Punkt vor Strich, linksassoziativ bei gleicher Stufe) */
+  function buildAstFromNumsOps(nums, ops) {
+    const expr = buildPlainExpr(nums, ops);
+    const tokens = tokenize(expr);
+    const rpn = toRpn(tokens);
+    const st = [];
+    for (let i = 0; i < rpn.length; i++) {
+      const x = rpn[i];
+      if (typeof x === 'number') {
+        st.push({ t: 'n', v: x });
+      } else {
+        const b = st.pop();
+        const a = st.pop();
+        st.push({ t: 'o', op: x, L: a, R: b });
+      }
+    }
+    return st.length === 1 ? st[0] : null;
+  }
+
+  /**
+   * Prüft getrennte Bereiche gemäß Baumstruktur (nicht nach syntaktischen Nachbarn in der Zeile):
+   * − direkte Literal-Kinder von * bzw. : in Mul- bzw. Div-Intervall
+   * − direkte Literal-Kinder von +/− im Additionsintervall
+   */
+  function astLiteralRangesOk(node, addLo, addHi, mulLo, mulHi, divLo, divHi) {
+    if (!node || node.t === 'n') return true;
+    if (!astLiteralRangesOk(node.L, addLo, addHi, mulLo, mulHi, divLo, divHi)) return false;
+    if (!astLiteralRangesOk(node.R, addLo, addHi, mulLo, mulHi, divLo, divHi)) return false;
+    const o = node.op;
+    if (o === '*') {
+      if (node.L.t === 'n' && (node.L.v < mulLo || node.L.v > mulHi)) return false;
+      if (node.R.t === 'n' && (node.R.v < mulLo || node.R.v > mulHi)) return false;
+      return true;
+    }
+    if (o === '/') {
+      if (node.L.t === 'n' && (node.L.v < divLo || node.L.v > divHi)) return false;
+      if (node.R.t === 'n') {
+        if (node.R.v === 0) return false;
+        if (node.R.v < divLo || node.R.v > divHi) return false;
+        if (node.L.t === 'n' && node.L.v === node.R.v) return false;
+      }
+      return true;
+    }
+    if (o === '+' || o === '-') {
+      if (node.L.t === 'n' && (node.L.v < addLo || node.L.v > addHi)) return false;
+      if (node.R.t === 'n' && (node.R.v < addLo || node.R.v > addHi)) return false;
+      return true;
+    }
+    return false;
+  }
+
+  function generateOneTask(addMin, addMax, mulMin, mulMax, divMin, divMax, nMin, nMax, opPool, pKlammer) {
+    const addLo = Math.min(addMin, addMax);
+    const addHi = Math.max(addMin, addMax);
+    const mulLo = Math.min(mulMin, mulMax);
+    const mulHi = Math.max(mulMin, mulMax);
+    const divLo = Math.min(divMin, divMax);
+    const divHi = Math.max(divMin, divMax);
+
+    const maxAttempts = 220;
+    const requireMix = opPoolSpansStrichUndPunkt(opPool);
+    const pickLo = Math.min(addLo, mulLo, divLo);
+    const pickHi = Math.max(addHi, mulHi, divHi);
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const nLo = Math.min(nMin, nMax);
+      const nHi = Math.max(nMin, nMax);
+      const n = rand(Math.max(2, nLo), Math.min(4, nHi));
+      const ops = sampleOps(opPool, n, requireMix);
+      if (!ops || !ops.length) continue;
+
+      const nums = [];
+      for (let i = 0; i < n; i++) nums.push(rand(pickLo, pickHi));
+
+      const ast = buildAstFromNumsOps(nums, ops);
+      if (!ast || !astLiteralRangesOk(ast, addLo, addHi, mulLo, mulHi, divLo, divHi)) continue;
+
+      const plain = buildPlainExpr(nums, ops);
+      const plainEval = evaluateAscii(plain);
+      if (!plainEval) continue;
+      const allOk = plainEval.intermediates.every(function (x) {
+        return Number.isInteger(x) && x >= 0;
+      });
+      if (!allOk) continue;
+
+      let asciiExpr = plain;
+      let useParen = false;
+
+      if (n >= 3 && Math.random() * 100 < pKlammer) {
+        const good = meaningfulWrapIndices(nums, ops, plain);
+        if (good.length) {
+          const w = pick(good);
+          const pex = buildParenExpr(nums, ops, w);
+          const pe = evaluateAscii(pex);
+          if (pe && pe.intermediates.every(function (x) { return Number.isInteger(x) && x >= 0; })) {
+            asciiExpr = pex;
+            useParen = true;
+          }
+        }
+      }
+
+      const finalEval = evaluateAscii(asciiExpr);
+      if (!finalEval) continue;
+      if (!finalEval.intermediates.every(function (x) { return Number.isInteger(x) && x >= 0; })) continue;
+
+      return {
+        display: toDisplayString(asciiExpr),
+        result: finalEval.result,
+        ascii: asciiExpr,
+        hasParen: useParen
+      };
+    }
+    return null;
+  }
+
+  function validateSetup() {
+    const err = document.getElementById('setupError');
+    err.textContent = '';
+    err.classList.remove('visible');
+
+    const ops = getSelectedOps();
+    if (!ops.length) {
+      err.textContent = 'Bitte mindestens einen Operator auswählen.';
+      err.classList.add('visible');
+      return false;
+    }
+
+    function normPair(minId, maxId, defLo, defHi) {
+      let a = parseInt(document.getElementById(minId).value, 10);
+      let b = parseInt(document.getElementById(maxId).value, 10);
+      if (isNaN(a)) a = defLo;
+      if (isNaN(b)) b = defHi;
+      a = Math.max(1, Math.min(99, a));
+      b = Math.max(1, Math.min(99, b));
+      if (a > b) {
+        const t = a; a = b; b = t;
+      }
+      document.getElementById(minId).value = String(a);
+      document.getElementById(maxId).value = String(b);
+      return { lo: a, hi: b };
+    }
+
+    normPair('addMin', 'addMax', 1, 20);
+    normPair('mulMin', 'mulMax', 2, 10);
+    normPair('divMin', 'divMax', 2, 12);
+
+    let nMin = parseInt(document.getElementById('nMin').value, 10);
+    let nMax = parseInt(document.getElementById('nMax').value, 10);
+    if (isNaN(nMin)) nMin = 3;
+    if (isNaN(nMax)) nMax = 3;
+    nMin = Math.max(2, Math.min(4, nMin));
+    nMax = Math.max(2, Math.min(4, nMax));
+    if (nMin > nMax) {
+      const t = nMin; nMin = nMax; nMax = t;
+      document.getElementById('nMin').value = String(nMin);
+      document.getElementById('nMax').value = String(nMax);
+    }
+
+    const count = Math.max(1, Math.min(50, parseInt(document.getElementById('taskCount').value, 10) || 10));
+    document.getElementById('taskCount').value = String(count);
+
+    const dur = Math.max(1, Math.min(30, parseInt(document.getElementById('duration').value, 10) || 6));
+    document.getElementById('duration').value = String(dur);
+
+    return true;
+  }
+
+  function startTraining() {
+    if (!validateSetup()) return;
+
+    const addMin = parseInt(document.getElementById('addMin').value, 10);
+    const addMax = parseInt(document.getElementById('addMax').value, 10);
+    const mulMin = parseInt(document.getElementById('mulMin').value, 10);
+    const mulMax = parseInt(document.getElementById('mulMax').value, 10);
+    const divMin = parseInt(document.getElementById('divMin').value, 10);
+    const divMax = parseInt(document.getElementById('divMax').value, 10);
+    const nMin = parseInt(document.getElementById('nMin').value, 10);
+    const nMax = parseInt(document.getElementById('nMax').value, 10);
+    const count = parseInt(document.getElementById('taskCount').value, 10);
+    const dur = parseInt(document.getElementById('duration').value, 10);
+    const pKlammer = parseInt(document.getElementById('pKlammer').value, 10) || 0;
+    const opPool = getSelectedOps();
+
+    tasks = [];
+    const err = document.getElementById('setupError');
+    for (let i = 0; i < count; i++) {
+      const t = generateOneTask(addMin, addMax, mulMin, mulMax, divMin, divMax, nMin, nMax, opPool, pKlammer);
+      if (!t) {
+        err.textContent = 'Zu den gewählten Einstellungen konnte keine gültige Aufgabe erzeugt werden. Bitte Zahlenbereiche oder Operatoren anpassen.';
+        err.classList.add('visible');
+        return;
+      }
+      tasks.push(t);
+    }
+
+    currentDur = dur;
+    sequenceToken++;
+    showPhase('display');
+    runSequence(dur, sequenceToken);
+  }
+
+  function runSequence(dur, token) {
+    displayIdx = 0;
+    const total = tasks.length;
+    const taskText = document.getElementById('taskText');
+    const counter = document.getElementById('counter');
+    const bar = document.getElementById('progressBar');
+
+    function clearTimer() {
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+    }
+
+    function showTask() {
+      if (token !== sequenceToken) return;
+      if (displayIdx >= total) {
+        clearTimer();
+        showResults();
+        return;
+      }
+      const t = tasks[displayIdx];
+      taskText.textContent = t.display;
+      counter.textContent = 'Aufgabe ' + (displayIdx + 1) + ' von ' + total;
+
+      bar.style.transition = 'none';
+      bar.style.width = '100%';
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          if (token !== sequenceToken) return;
+          bar.style.transition = 'width ' + dur + 's linear';
+          bar.style.width = '0%';
+        });
+      });
+
+      displayIdx++;
+      clearTimer();
+      timer = setTimeout(showTask, dur * 1000);
+    }
+
+    clearTimer();
+    showTask();
+  }
+
+  function skipCurrentTask() {
+    if (!document.getElementById('display').classList.contains('active')) return;
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
+    sequenceToken++;
+    const dur = currentDur;
+    const tok = sequenceToken;
+    const total = tasks.length;
+    const taskText = document.getElementById('taskText');
+    const counter = document.getElementById('counter');
+    const bar = document.getElementById('progressBar');
+
+    function showFromCurrent() {
+      if (tok !== sequenceToken) return;
+      const idx = displayIdx;
+      if (idx >= total) {
+        showResults();
+        return;
+      }
+      const t = tasks[idx];
+      taskText.textContent = t.display;
+      counter.textContent = 'Aufgabe ' + (idx + 1) + ' von ' + total;
+      bar.style.transition = 'none';
+      bar.style.width = '100%';
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          if (tok !== sequenceToken) return;
+          bar.style.transition = 'width ' + dur + 's linear';
+          bar.style.width = '0%';
+        });
+      });
+      displayIdx = idx + 1;
+      timer = setTimeout(showFromCurrent, dur * 1000);
+    }
+
+    showFromCurrent();
+  }
+
+  function showResults() {
+    showPhase('results');
+    const list = document.getElementById('taskList');
+    list.innerHTML = '';
+    const btnReveal = document.getElementById('btnReveal');
+    btnReveal.disabled = false;
+
+    tasks.forEach(function (t) {
+      const row = document.createElement('div');
+      row.className = 'task-row';
+      const spanQ = document.createElement('span');
+      spanQ.textContent = t.display + ' =';
+      const spanA = document.createElement('span');
+      spanA.className = 'answer';
+      spanA.textContent = String(t.result);
+      row.appendChild(spanQ);
+      row.appendChild(spanA);
+      list.appendChild(row);
+    });
+  }
+
+  function revealAnswers() {
+    document.querySelectorAll('.answer').forEach(function (el) {
+      el.classList.add('visible');
+    });
+    document.getElementById('btnReveal').disabled = true;
+  }
+
+  function resetToSetup() {
+    sequenceToken++;
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
+    showPhase('setup');
+  }
+
+  /* Operatoren-Toggles */
+  document.getElementById('opToggles').addEventListener('click', function (e) {
+    const btn = e.target.closest('.op-btn');
+    if (!btn) return;
+    const selected = document.querySelectorAll('.op-btn.selected').length;
+    if (btn.classList.contains('selected')) {
+      if (selected <= 1) return;
+      btn.classList.remove('selected');
+      btn.setAttribute('aria-pressed', 'false');
+    } else {
+      btn.classList.add('selected');
+      btn.setAttribute('aria-pressed', 'true');
+    }
+  });
+
+  document.getElementById('pKlammer').addEventListener('input', function () {
+    document.getElementById('pKlammerVal').innerHTML = this.value + '&nbsp;%';
+  });
+
+  document.getElementById('btnStart').addEventListener('click', startTraining);
+  document.getElementById('btnReveal').addEventListener('click', revealAnswers);
+  document.getElementById('btnReset').addEventListener('click', resetToSetup);
+
+  document.addEventListener('keydown', function (e) {
+    if (e.code === 'Escape') {
+      if (document.getElementById('display').classList.contains('active')) {
+        e.preventDefault();
+        resetToSetup();
+      }
+    }
+    if (e.code === 'Space') {
+      if (document.getElementById('display').classList.contains('active')) {
+        e.preventDefault();
+        skipCurrentTask();
+      }
+    }
+  });
+})();
+</script>
+</body>
+</html>

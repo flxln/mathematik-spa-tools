@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Malfolgen-Trainer</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .container {
+    width: min(560px, 92vw);
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    color: #93c5fd;
+  }
+
+  /* ---------- Setup ---------- */
+  .setup { display: flex; flex-direction: column; gap: 1.2rem; }
+
+  .field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    background: #1e293b;
+    padding: .9rem 1.2rem;
+    border-radius: .75rem;
+  }
+  .field label {
+    font-size: .95rem;
+    white-space: nowrap;
+  }
+  .field .inputs { display: flex; align-items: center; gap: .5rem; }
+
+  input[type="number"] {
+    width: 4.5rem;
+    padding: .45rem .6rem;
+    border: 2px solid #334155;
+    border-radius: .5rem;
+    background: #0f172a;
+    color: #e2e8f0;
+    font-size: 1rem;
+    text-align: center;
+    outline: none;
+    transition: border-color .2s;
+  }
+  input[type="number"]:focus { border-color: #60a5fa; }
+
+  .sep { color: #64748b; font-weight: 600; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: .75rem 2rem;
+    border: none;
+    border-radius: .6rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s, transform .1s;
+  }
+  .btn:active { transform: scale(.97); }
+
+  .btn-primary {
+    background: #3b82f6;
+    color: #fff;
+    margin-top: .6rem;
+  }
+  .btn-primary:hover { background: #2563eb; }
+
+  .btn-secondary {
+    background: #334155;
+    color: #e2e8f0;
+  }
+  .btn-secondary:hover { background: #475569; }
+
+  .btn-success {
+    background: #22c55e;
+    color: #fff;
+  }
+  .btn-success:hover { background: #16a34a; }
+
+  /* ---------- Display (running) ---------- */
+  .display { display: none; flex-direction: column; align-items: center; gap: 1.6rem; }
+
+  .task-text {
+    font-size: clamp(3rem, 12vw, 6rem);
+    font-weight: 800;
+    letter-spacing: .04em;
+    color: #f8fafc;
+    min-height: 1.2em;
+  }
+
+  .progress-bar-wrap {
+    width: 100%;
+    height: 6px;
+    background: #1e293b;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: #3b82f6;
+    border-radius: 3px;
+    transition: width .3s linear;
+  }
+
+  .counter {
+    font-size: .9rem;
+    color: #94a3b8;
+  }
+
+  /* ---------- Results ---------- */
+  .results { display: none; flex-direction: column; align-items: center; gap: 1.4rem; }
+
+  .results h2 {
+    font-size: 1.3rem;
+    color: #93c5fd;
+  }
+
+  .task-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: .55rem;
+  }
+
+  .task-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .6rem;
+    background: #1e293b;
+    padding: .7rem 1.2rem;
+    border-radius: .6rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  .task-row .answer {
+    min-width: 3.5rem;
+    text-align: left;
+    color: #22c55e;
+    visibility: hidden;
+  }
+  .task-row .answer.visible { visibility: visible; }
+
+  .btn-group {
+    display: flex;
+    gap: .8rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: .4rem;
+  }
+</style>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="mst-page">
+<nav class="mst-nav" aria-label="Hauptnavigation">
+  <a href="index.html" class="mst-nav__link">Zur Übersicht</a>
+</nav>
+
+<div class="container">
+  <h1>Malfolgen-Trainer</h1>
+
+  <!-- Setup -->
+  <div class="setup" id="setup">
+    <div class="field">
+      <label>Faktor-Bereich</label>
+      <div class="inputs">
+        <input type="number" id="minFactor" value="2" min="1" max="20">
+        <span class="sep">bis</span>
+        <input type="number" id="maxFactor" value="10" min="1" max="20">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Anzahl Aufgaben</label>
+      <div class="inputs">
+        <input type="number" id="taskCount" value="10" min="1" max="50">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Anzeigedauer (Sek.)</label>
+      <div class="inputs">
+        <input type="number" id="duration" value="5" min="1" max="30" step="1">
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="startTraining()">Start</button>
+  </div>
+
+  <!-- Running display -->
+  <div class="display" id="display">
+    <div class="counter" id="counter"></div>
+    <div class="task-text" id="taskText"></div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="results" id="results">
+    <h2>Übersicht</h2>
+    <div class="task-list" id="taskList"></div>
+    <div class="btn-group">
+      <button class="btn btn-success" id="btnReveal" onclick="revealAnswers()">Lösungen anzeigen</button>
+      <button class="btn btn-secondary" onclick="resetToSetup()">Neu starten</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let tasks = [];
+  let timer = null;
+
+  function rand(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function startTraining() {
+    const lo = Math.max(1, +document.getElementById('minFactor').value);
+    const hi = Math.max(lo, +document.getElementById('maxFactor').value);
+    const count = Math.max(1, +document.getElementById('taskCount').value);
+    const dur = Math.max(1, +document.getElementById('duration').value);
+
+    tasks = [];
+    for (let i = 0; i < count; i++) {
+      const a = rand(lo, hi);
+      const b = rand(lo, hi);
+      tasks.push({ a, b, result: a * b });
+    }
+
+    show('display');
+    runSequence(dur);
+  }
+
+  function show(id) {
+    ['setup', 'display', 'results'].forEach(s => {
+      document.getElementById(s).style.display = s === id ? 'flex' : 'none';
+    });
+  }
+
+  function runSequence(dur) {
+    let idx = 0;
+    const total = tasks.length;
+    const taskText = document.getElementById('taskText');
+    const counter = document.getElementById('counter');
+    const bar = document.getElementById('progressBar');
+
+    function showTask() {
+      if (idx >= total) { showResults(); return; }
+      const t = tasks[idx];
+      taskText.textContent = `${t.a} · ${t.b}`;
+      counter.textContent = `Aufgabe ${idx + 1} von ${total}`;
+      bar.style.transition = 'none';
+      bar.style.width = '100%';
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          bar.style.transition = `width ${dur}s linear`;
+          bar.style.width = '0%';
+        });
+      });
+
+      idx++;
+      timer = setTimeout(showTask, dur * 1000);
+    }
+
+    showTask();
+  }
+
+  function showResults() {
+    show('results');
+    const list = document.getElementById('taskList');
+    list.innerHTML = '';
+    document.getElementById('btnReveal').disabled = false;
+
+    tasks.forEach(t => {
+      const row = document.createElement('div');
+      row.className = 'task-row';
+      row.innerHTML = `<span>${t.a} · ${t.b} =</span><span class="answer">${t.result}</span>`;
+      list.appendChild(row);
+    });
+  }
+
+  function revealAnswers() {
+    document.querySelectorAll('.answer').forEach(el => el.classList.add('visible'));
+    document.getElementById('btnReveal').disabled = true;
+  }
+
+  function resetToSetup() {
+    clearTimeout(timer);
+    show('setup');
+  }
+</script>
+</body>
+</html>
