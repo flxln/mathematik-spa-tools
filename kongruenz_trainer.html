@@ -216,71 +216,126 @@
   (function () {
   'use strict';
 
-  // ── Shape pairs (vertices in grid units, integer coords) ──────────────────
-  const PAIRS = [
-    // ── congruent ──
-    {
-      id: 1, label: 'Rechtwinkliges Dreieck', congruent: true, diff: 'easy',
-      a: [[0,0],[3,0],[0,4]],
-      b: [[0,0],[3,0],[3,4]]           // horizontal gespiegelt
-    },
-    {
-      id: 2, label: 'Rechteck', congruent: true, diff: 'easy',
-      a: [[0,0],[4,0],[4,2],[0,2]],    // Querformat
-      b: [[0,0],[2,0],[2,4],[0,4]]     // Hochformat (90° gedreht)
-    },
-    {
-      id: 3, label: 'L-Form', congruent: true, diff: 'medium',
-      a: [[0,0],[2,0],[2,2],[4,2],[4,4],[0,4]],
-      b: [[0,0],[4,0],[4,2],[2,2],[2,4],[0,4]]  // 180° gedreht
-    },
-    {
-      id: 4, label: 'Treppenform', congruent: true, diff: 'medium',
-      a: [[0,0],[1,0],[1,1],[2,1],[2,2],[3,2],[3,3],[0,3]],
-      b: [[0,0],[3,0],[3,3],[2,3],[2,2],[1,2],[1,1],[0,1]] // gespiegelt
-    },
-    {
-      id: 5, label: 'Hausform', congruent: true, diff: 'medium',
-      a: [[0,2],[2,0],[4,2],[4,5],[0,5]],      // Haus aufrecht
-      b: [[0,0],[4,0],[4,3],[2,5],[0,3]]        // 180° gedreht
-    },
-    {
-      id: 6, label: 'Pfeilform', congruent: true, diff: 'hard',
-      a: [[0,0],[3,0],[5,1],[3,2],[0,2]],       // Pfeil nach rechts
-      b: [[0,1],[2,0],[5,0],[5,2],[2,2]]         // horizontal gespiegelt
-    },
-    // ── nicht kongruent ──
-    {
-      id: 7, label: 'Verschiedene Dreiecke', congruent: false, diff: 'easy',
-      a: [[0,0],[3,0],[0,4]],
-      b: [[0,0],[3,0],[0,3]]    // kürzere Höhe
-    },
-    {
-      id: 8, label: 'Rechteck vs. Quadrat', congruent: false, diff: 'easy',
-      a: [[0,0],[4,0],[4,2],[0,2]],
-      b: [[0,0],[3,0],[3,3],[0,3]]
-    },
-    {
-      id: 9, label: 'Verschiedene L-Formen', congruent: false, diff: 'medium',
-      a: [[0,0],[2,0],[2,2],[4,2],[4,4],[0,4]],
-      b: [[0,0],[2,0],[2,3],[5,3],[5,5],[0,5]]  // längere Arme
-    },
-    {
-      id: 10, label: 'Verschiedene Treppen', congruent: false, diff: 'medium',
-      a: [[0,0],[1,0],[1,1],[2,1],[2,2],[3,2],[3,3],[0,3]],
-      b: [[0,0],[2,0],[2,2],[4,2],[4,4],[6,4],[6,6],[0,6]] // doppelt breite Stufen
-    },
-    {
-      id: 11, label: 'Verschiedene Hausformen', congruent: false, diff: 'hard',
-      a: [[0,2],[2,0],[4,2],[4,5],[0,5]],
-      b: [[0,3],[3,0],[6,3],[6,7],[0,7]]  // größeres Haus
-    },
-    {
-      id: 12, label: 'T-Form vs. L-Form', congruent: false, diff: 'hard',
-      a: [[0,0],[6,0],[6,2],[4,2],[4,5],[2,5],[2,2],[0,2]],
-      b: [[0,0],[2,0],[2,3],[6,3],[6,5],[0,5]]
+  // ── Integer vertex transforms (preserve grid coords) ─────────────────────
+  function rot90(verts) {
+    const maxY = Math.max(...verts.map(v => v[1]));
+    return verts.map(([x, y]) => [-y + maxY, x]);
+  }
+  function flipH(verts) {
+    const maxX = Math.max(...verts.map(v => v[0]));
+    return verts.map(([x, y]) => [maxX - x, y]);
+  }
+
+  // ── Shape generators (output: integer vertex arrays) ──────────────────────
+  function shapeRect(w, h) {
+    return [[0,0],[w,0],[w,h],[0,h]];
+  }
+  function shapeTriangle(w, h) {
+    return [[0,0],[w,0],[0,h]];
+  }
+  function shapeLform(mW, mH, cW, cH) {
+    // mW×mH with cW×cH notch cut from top-right corner
+    return [[0,0],[mW,0],[mW,mH-cH],[mW-cW,mH-cH],[mW-cW,mH],[0,mH]];
+  }
+  function shapeStairs(steps, sw, sh) {
+    const v = [];
+    for (let s = 0; s < steps; s++) {
+      v.push([s*sw, s*sh]);
+      v.push([(s+1)*sw, s*sh]);
     }
-  ];
+    v.push([steps*sw, steps*sh]);
+    v.push([0, steps*sh]);
+    return v;
+  }
+  function shapeHouse(w, wallH, roofH) {
+    const mid = Math.floor(w / 2);
+    return [[0,roofH],[mid,0],[w,roofH],[w,roofH+wallH],[0,roofH+wallH]];
+  }
+  function shapeTform(barW, barH, stemW, stemH) {
+    const sx = Math.floor((barW - stemW) / 2);
+    return [
+      [0,0],[barW,0],[barW,barH],
+      [sx+stemW,barH],[sx+stemW,barH+stemH],
+      [sx,barH+stemH],[sx,barH],[0,barH]
+    ];
+  }
+
+  // ── Random helpers ─────────────────────────────────────────────────────────
+  function ri(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+  function pick(arr)    { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  // ── Build one shape from type + difficulty ─────────────────────────────────
+  function buildShape(type, diff) {
+    const lo = diff === 'easy' ? 2 : 3;
+    const hi = diff === 'easy' ? 4 : diff === 'medium' ? 6 : 7;
+    switch (type) {
+      case 'rect':     return shapeRect(ri(lo,hi), ri(lo,hi));
+      case 'triangle': return shapeTriangle(ri(lo,hi), ri(lo,hi));
+      case 'L': {
+        const mW = ri(lo+1,hi), mH = ri(lo+1,hi);
+        return shapeLform(mW, mH, ri(1, Math.max(1,Math.floor(mW/2))), ri(1, Math.max(1,Math.floor(mH/2))));
+      }
+      case 'stairs': {
+        const steps = ri(2, Math.min(3, hi-1));
+        return shapeStairs(steps, ri(1,2), ri(1,2));
+      }
+      case 'house': {
+        const w = ri(lo,hi) * 2;
+        return shapeHouse(w, ri(lo-1, hi-1), ri(1, Math.floor(w/2)));
+      }
+      case 'T': {
+        const bW = ri(lo+2, hi+1);
+        const sW = ri(1, Math.max(1, Math.floor(bW/2)));
+        return shapeTform(bW, ri(1,2), sW, ri(lo-1, hi-1));
+      }
+    }
+  }
+
+  // Sorted bounding-box size — congruent shapes have the same value
+  function sortedSize(v) {
+    const b = bbox(v);
+    const s = [b.x1-b.x0, b.y1-b.y0].sort((a,b)=>a-b);
+    return s[0] * 1000 + s[1];
+  }
+
+  // Build a shape that is NOT congruent to `ref` (different sorted bbox)
+  function buildDifferent(type, diff, ref) {
+    const minDiff = diff === 'hard' ? 1 : 2;
+    const refKey  = sortedSize(ref);
+    for (let i = 0; i < 30; i++) {
+      const cand = buildShape(type, diff);
+      if (cand.length !== ref.length) return cand; // different vertex count → different type
+      const b1 = bbox(ref), b2 = bbox(cand);
+      const d1 = Math.abs((b1.x1-b1.x0)-(b2.x1-b2.x0));
+      const d2 = Math.abs((b1.y1-b1.y0)-(b2.y1-b2.y0));
+      if (d1 >= minDiff || d2 >= minDiff) return cand;
+    }
+    // Fallback: clearly different shape type
+    return diff === 'easy'
+      ? shapeRect(ri(2,4), ri(2,4))
+      : shapeTriangle(ri(3,6), ri(3,6));
+  }
+
+  // ── Generate a random pair ─────────────────────────────────────────────────
+  function generateRandomPair(diff) {
+    const pool = diff === 'easy'   ? ['rect','triangle','L'] :
+                 diff === 'medium' ? ['rect','triangle','L','stairs','house'] :
+                                     ['rect','triangle','L','stairs','house','T'];
+    const type       = pick(pool);
+    const isCongruent = Math.random() < 0.5;
+    const a = buildShape(type, diff);
+
+    let b;
+    if (isCongruent) {
+      const steps = ri(1, 3);
+      b = a.map(v => [...v]);
+      for (let i = 0; i < steps; i++) b = rot90(b);
+      if (Math.random() < 0.5) b = flipH(b);
+    } else {
+      b = buildDifferent(type, diff, a);
+    }
+    return { congruent: isCongruent, a, b };
+  }
 
   // ── Constants / state ─────────────────────────────────────────────────────
   const TOTAL_ROUNDS = 8;
@@ -699,12 +754,7 @@
 
   // ── Start game ────────────────────────────────────────────────────────────
   function startGame() {
-    const d = game.diff;
-    const eligible = PAIRS.filter(p =>
-      d === 'easy'   ? p.diff === 'easy' :
-      d === 'medium' ? p.diff !== 'hard' : true
-    );
-    game.pairs  = shuffle(eligible).slice(0, TOTAL_ROUNDS);
+    game.pairs  = Array.from({ length: TOTAL_ROUNDS }, () => generateRandomPair(game.diff));
     game.idx    = 0;
     game.scores = [];
     startRound();
