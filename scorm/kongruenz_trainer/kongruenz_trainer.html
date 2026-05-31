@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kongruenz-Trainer</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    body.mst-page {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 1rem 2rem;
+      padding-top: max(1rem, calc(0.5rem + env(safe-area-inset-top)));
+    }
+    .container {
+      width: min(700px, 100%);
+    }
+
+    /* ── Setup ── */
+    #panel-setup { padding-top: 0.5rem; }
+    #panel-setup h1 {
+      font-size: 1.55rem; font-weight: 700; color: #93c5fd; margin: 0 0 0.4rem;
+    }
+    #panel-setup p {
+      color: #94a3b8; font-size: 0.95rem; line-height: 1.55; margin: 0 0 1.5rem;
+    }
+    .diff-row {
+      display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1.5rem;
+    }
+    .btn-diff {
+      padding: 0.5rem 1.1rem; border-radius: 0.5rem; border: 1.5px solid #334155;
+      background: #1e293b; color: #94a3b8; font-size: 0.9rem; cursor: pointer;
+      font-family: inherit; transition: all 0.15s;
+    }
+    .btn-diff.active, .btn-diff:hover {
+      border-color: #3b82f6; background: #1e3a5f; color: #bfdbfe;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 0.6rem 1.4rem; border-radius: 0.55rem; border: none;
+      font-family: inherit; font-size: 0.95rem; font-weight: 600;
+      cursor: pointer; transition: filter 0.15s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: #3b82f6; color: #fff; }
+    .btn-primary:hover { filter: brightness(1.15); }
+    .btn-yes { background: #16a34a; color: #fff; padding: 0.7rem 1.6rem; border-radius: 0.55rem; border: none; font-family: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; transition: filter 0.15s; }
+    .btn-yes:hover { filter: brightness(1.15); }
+    .btn-no  { background: #dc2626; color: #fff; padding: 0.7rem 1.6rem; border-radius: 0.55rem; border: none; font-family: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; transition: filter 0.15s; }
+    .btn-no:hover  { filter: brightness(1.15); }
+
+    /* ── Guess panel ── */
+    .question {
+      font-size: 1.1rem; margin: 0 0 1rem; color: #e2e8f0; line-height: 1.45;
+    }
+    .question strong { color: #93c5fd; }
+    .canvases-row {
+      display: flex; gap: 1rem; justify-content: center; margin-bottom: 1.2rem;
+    }
+    .canvas-wrap {
+      display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+    }
+    .canvas-wrap canvas {
+      border-radius: 0.5rem; border: 1.5px solid #334155; background: #0f172a;
+      display: block;
+    }
+    .canvas-wrap .lbl {
+      font-size: 0.8rem; color: #64748b; font-weight: 600;
+    }
+    .guess-btns {
+      display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+    }
+
+    /* ── Verify panel ── */
+    .instruction {
+      font-size: 0.98rem; margin: 0 0 0.6rem; color: #94a3b8; min-height: 1.5em;
+    }
+    #verify-canvas-wrap {
+      width: 100%; position: relative; margin-bottom: 0.9rem;
+    }
+    #cvs-verify {
+      display: block; width: 100%; border-radius: 0.6rem;
+      border: 1.5px solid #334155; background: #0f172a;
+      touch-action: none; cursor: grab; user-select: none;
+    }
+    #cvs-verify:active { cursor: grabbing; }
+    .controls { display: flex; flex-direction: column; gap: 0.55rem; }
+    .ctrl-row {
+      display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap;
+    }
+    .ctrl-lbl { font-size: 0.8rem; color: #64748b; min-width: 3.5rem; }
+    .btn-sm {
+      padding: 0.35rem 0.65rem; border-radius: 0.4rem; border: 1px solid #334155;
+      background: #1e293b; color: #94a3b8; font-size: 0.82rem; cursor: pointer;
+      font-family: inherit; transition: background 0.12s, color 0.12s;
+      white-space: nowrap;
+    }
+    .btn-sm:hover { background: #273449; color: #e2e8f0; }
+    .btn-sm:active { transform: scale(0.95); }
+    input[type=range] {
+      flex: 1; min-width: 80px; accent-color: #3b82f6;
+      cursor: pointer;
+    }
+    .ctrl-row .btn { align-self: center; }
+
+    /* hidden attribute must win over display:flex */
+    [hidden] { display: none !important; }
+
+    /* ── Feedback panel ── */
+    #panel-feedback {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 0.75rem; padding-top: 1rem; text-align: center;
+    }
+    .feedback-icon {
+      font-size: 3rem; line-height: 1;
+      width: 4.5rem; height: 4.5rem; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .feedback-icon.correct { background: rgba(34,197,94,0.15); color: #22c55e; }
+    .feedback-icon.wrong   { background: rgba(239,68,68,0.15);  color: #ef4444; }
+    .feedback-msg { font-size: 1.3rem; font-weight: 700; margin: 0; }
+    .feedback-sub { font-size: 0.95rem; color: #94a3b8; margin: 0; }
+    .score-display { font-size: 1rem; color: #64748b; margin: 0; }
+    .score-dots { display: flex; gap: 0.35rem; justify-content: center; flex-wrap: wrap; }
+    .score-dot { font-size: 1.1rem; }
+    .score-dot.ok   { color: #22c55e; }
+    .score-dot.fail { color: #ef4444; }
+  </style>
+</head>
+<body class="mst-page">
+
+  <div class="container">
+
+    <!-- ── Setup ── -->
+    <div id="panel-setup">
+      <h1>Kongruenz-Trainer</h1>
+      <p>Sind zwei Figuren <strong>kongruent</strong> (deckungsgleich)? Schätze zuerst – dann lege die Figur durch <em>Verschieben, Drehen und Spiegeln</em> auf die Vorlage und prüfe nach.</p>
+      <p>Schwierigkeitsgrad:</p>
+      <div class="diff-row">
+        <button class="btn-diff active" data-diff="easy">Leicht (Kl. 4–5)</button>
+        <button class="btn-diff" data-diff="medium">Mittel (Kl. 6)</button>
+        <button class="btn-diff" data-diff="hard">Schwer (Kl. 7+)</button>
+      </div>
+      <button class="btn btn-primary" id="btn-start">Los geht's</button>
+    </div>
+
+    <!-- ── Guess ── -->
+    <div id="panel-guess" hidden>
+      <p class="question">Sind diese Figuren <strong>kongruent</strong> (deckungsgleich)?</p>
+      <div class="canvases-row">
+        <div class="canvas-wrap">
+          <canvas id="cvs-a"></canvas>
+          <span class="lbl">Figur A</span>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="cvs-b"></canvas>
+          <span class="lbl">Figur B</span>
+        </div>
+      </div>
+      <div class="guess-btns">
+        <button class="btn-yes" id="btn-yes">Ja, kongruent</button>
+        <button class="btn-no"  id="btn-no">Nein, verschieden</button>
+      </div>
+    </div>
+
+    <!-- ── Verify ── -->
+    <div id="panel-verify" hidden>
+      <p class="instruction" id="verify-hint">Lege die <span style="color:#f97316">orange</span> Figur auf die <span style="color:#60a5fa">blaue</span> Vorlage!</p>
+      <div id="verify-canvas-wrap">
+        <canvas id="cvs-verify"></canvas>
+      </div>
+      <div class="controls">
+        <div class="ctrl-row">
+          <span class="ctrl-lbl">Drehen</span>
+          <button class="btn-sm" id="btn-rot-n15">−15°</button>
+          <button class="btn-sm" id="btn-rot-n1">−1°</button>
+          <input type="range" id="rot-slider" min="0" max="359" value="0" step="1">
+          <button class="btn-sm" id="btn-rot-p1">+1°</button>
+          <button class="btn-sm" id="btn-rot-p15">+15°</button>
+        </div>
+        <div class="ctrl-row">
+          <span class="ctrl-lbl">Spiegeln</span>
+          <button class="btn-sm" id="btn-flip-h">⇄ Horizontal</button>
+          <button class="btn-sm" id="btn-flip-v">⇅ Vertikal</button>
+          <button class="btn-sm" id="btn-reset-mov">↺ Zurücksetzen</button>
+        </div>
+        <div class="ctrl-row" style="padding-top:0.3rem">
+          <button class="btn btn-primary" id="btn-evaluate">Auswerten</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Feedback ── -->
+    <div id="panel-feedback" hidden>
+      <div class="feedback-icon" id="fb-icon"></div>
+      <p class="feedback-msg" id="fb-msg"></p>
+      <p class="feedback-sub" id="fb-sub"></p>
+      <p class="score-display" id="fb-score"></p>
+      <div class="score-dots" id="fb-dots"></div>
+      <button class="btn btn-primary" id="btn-next" style="margin-top:0.5rem">Nächste Aufgabe</button>
+    </div>
+
+  </div><!-- /.container -->
+
+  <script>
+  (function () {
+  'use strict';
+
+  // ── SCORM 1.2 (z. B. Moodle mod_scorm) ───────────────────────────────────
+  const SCORM_MAX_SCORE = 8;
+  const scorm = { API: null, initialized: false, finished: false };
+
+  function findSCORMAPI(win) {
+    let d = 0;
+    const maxD = 32;
+    while (win && d < maxD) {
+      if (win.API) return win.API;
+      if (win.parent && win.parent !== win) { win = win.parent; d++; continue; }
+      break;
+    }
+    return null;
+  }
+
+  function getSCORMAPI() {
+    let api = findSCORMAPI(window);
+    if (!api && window.opener) api = findSCORMAPI(window.opener);
+    return api;
+  }
+
+  function scormInitialize() {
+    scorm.API = getSCORMAPI();
+    if (!scorm.API) return false;
+    if (scorm.API.LMSInitialize('') !== 'true') return false;
+    scorm.initialized = true;
+    scorm.API.LMSSetValue('cmi.core.lesson_status', 'incomplete');
+    scorm.API.LMSSetValue('cmi.core.score.min', '0');
+    scorm.API.LMSSetValue('cmi.core.score.max', String(SCORM_MAX_SCORE));
+    scorm.API.LMSSetValue('cmi.core.score.raw', '0');
+    scorm.API.LMSCommit('');
+    return true;
+  }
+
+  function scormAfterRound(roundIndex0, guessed, actualCongruent, correct) {
+    if (!scorm.API || !scorm.initialized) return;
+    const pre = 'cmi.interactions.' + roundIndex0 + '.';
+    scorm.API.LMSSetValue(pre + 'id', 'round_' + (roundIndex0 + 1));
+    scorm.API.LMSSetValue(pre + 'type', 'true-false');
+    scorm.API.LMSSetValue(pre + 'student_response', guessed ? 't' : 'f');
+    scorm.API.LMSSetValue(pre + 'correct_responses.0.pattern', actualCongruent ? 't' : 'f');
+    scorm.API.LMSSetValue(pre + 'result', correct ? 'correct' : 'wrong');
+    const raw = String(game.scores.filter(s => s.correct).length);
+    scorm.API.LMSSetValue('cmi.core.score.raw', raw);
+    scorm.API.LMSCommit('');
+  }
+
+  function scormCompleteSession() {
+    if (!scorm.API || !scorm.initialized || scorm.finished) return;
+    const ok = game.scores.filter(s => s.correct).length;
+    scorm.API.LMSSetValue('cmi.core.score.raw', String(ok));
+    scorm.API.LMSSetValue('cmi.core.lesson_status', 'completed');
+    scorm.API.LMSSetValue('cmi.core.exit', 'normal');
+    scorm.API.LMSCommit('');
+    scorm.API.LMSFinish('');
+    scorm.finished = true;
+  }
+
+  function scormCommitPartial() {
+    if (!scorm.API || !scorm.initialized || scorm.finished) return;
+    const ok = game.scores.filter(s => s.correct).length;
+    scorm.API.LMSSetValue('cmi.core.score.raw', String(ok));
+    scorm.API.LMSCommit('');
+  }
+
+  // ── Integer vertex transforms (preserve grid coords) ─────────────────────
+  function rot90(verts) {
+    const maxY = Math.max(...verts.map(v => v[1]));
+    return verts.map(([x, y]) => [-y + maxY, x]);
+  }
+  function flipH(verts) {
+    const maxX = Math.max(...verts.map(v => v[0]));
+    return verts.map(([x, y]) => [maxX - x, y]);
+  }
+
+  // ── Shape generators (output: integer vertex arrays) ──────────────────────
+  function shapeRect(w, h) {
+    return [[0,0],[w,0],[w,h],[0,h]];
+  }
+  function shapeTriangle(w, h) {
+    return [[0,0],[w,0],[0,h]];
+  }
+  function shapeLform(mW, mH, cW, cH) {
+    // mW×mH with cW×cH notch cut from top-right corner
+    return [[0,0],[mW,0],[mW,mH-cH],[mW-cW,mH-cH],[mW-cW,mH],[0,mH]];
+  }
+  function shapeStairs(steps, sw, sh) {
+    const v = [];
+    for (let s = 0; s < steps; s++) {
+      v.push([s*sw, s*sh]);
+      v.push([(s+1)*sw, s*sh]);
+    }
+    v.push([steps*sw, steps*sh]);
+    v.push([0, steps*sh]);
+    return v;
+  }
+  function shapeHouse(w, wallH, roofH) {
+    const mid = Math.floor(w / 2);
+    return [[0,roofH],[mid,0],[w,roofH],[w,roofH+wallH],[0,roofH+wallH]];
+  }
+  function shapeTform(barW, barH, stemW, stemH) {
+    const sx = Math.floor((barW - stemW) / 2);
+    return [
+      [0,0],[barW,0],[barW,barH],
+      [sx+stemW,barH],[sx+stemW,barH+stemH],
+      [sx,barH+stemH],[sx,barH],[0,barH]
+    ];
+  }
+
+  // ── Random helpers ─────────────────────────────────────────────────────────
+  function ri(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+  function pick(arr)    { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  // ── Build one shape from type + difficulty ─────────────────────────────────
+  function buildShape(type, diff) {
+    const lo = diff === 'easy' ? 2 : 3;
+    const hi = diff === 'easy' ? 4 : diff === 'medium' ? 6 : 7;
+    switch (type) {
+      case 'rect':     return shapeRect(ri(lo,hi), ri(lo,hi));
+      case 'triangle': return shapeTriangle(ri(lo,hi), ri(lo,hi));
+      case 'L': {
+        const mW = ri(lo+1,hi), mH = ri(lo+1,hi);
+        return shapeLform(mW, mH, ri(1, Math.max(1,Math.floor(mW/2))), ri(1, Math.max(1,Math.floor(mH/2))));
+      }
+      case 'stairs': {
+        const steps = ri(2, Math.min(3, hi-1));
+        return shapeStairs(steps, ri(1,2), ri(1,2));
+      }
+      case 'house': {
+        const w = ri(lo,hi) * 2;
+        return shapeHouse(w, ri(lo-1, hi-1), ri(1, Math.floor(w/2)));
+      }
+      case 'T': {
+        const bW = ri(lo+2, hi+1);
+        const sW = ri(1, Math.max(1, Math.floor(bW/2)));
+        return shapeTform(bW, ri(1,2), sW, ri(lo-1, hi-1));
+      }
+    }
+  }
+
+  // Sorted bounding-box size — congruent shapes have the same value
+  function sortedSize(v) {
+    const b = bbox(v);
+    const s = [b.x1-b.x0, b.y1-b.y0].sort((a,b)=>a-b);
+    return s[0] * 1000 + s[1];
+  }
+
+  // Build a shape that is NOT congruent to `ref` (different sorted bbox)
+  function buildDifferent(type, diff, ref) {
+    const minDiff = diff === 'hard' ? 1 : 2;
+    const refKey  = sortedSize(ref);
+    for (let i = 0; i < 30; i++) {
+      const cand = buildShape(type, diff);
+      if (cand.length !== ref.length) return cand; // different vertex count → different type
+      const b1 = bbox(ref), b2 = bbox(cand);
+      const d1 = Math.abs((b1.x1-b1.x0)-(b2.x1-b2.x0));
+      const d2 = Math.abs((b1.y1-b1.y0)-(b2.y1-b2.y0));
+      if (d1 >= minDiff || d2 >= minDiff) return cand;
+    }
+    // Fallback: clearly different shape type
+    return diff === 'easy'
+      ? shapeRect(ri(2,4), ri(2,4))
+      : shapeTriangle(ri(3,6), ri(3,6));
+  }
+
+  // ── Generate a random pair ─────────────────────────────────────────────────
+  function generateRandomPair(diff) {
+    const pool = diff === 'easy'   ? ['rect','triangle','L'] :
+                 diff === 'medium' ? ['rect','triangle','L','stairs','house'] :
+                                     ['rect','triangle','L','stairs','house','T'];
+    const type       = pick(pool);
+    const isCongruent = Math.random() < 0.5;
+    const a = buildShape(type, diff);
+
+    let b;
+    if (isCongruent) {
+      const steps = ri(1, 3);
+      b = a.map(v => [...v]);
+      for (let i = 0; i < steps; i++) b = rot90(b);
+      if (Math.random() < 0.5) b = flipH(b);
+    } else {
+      b = buildDifferent(type, diff, a);
+    }
+    return { congruent: isCongruent, a, b };
+  }
+
+  // ── Constants / state ─────────────────────────────────────────────────────
+  const TOTAL_ROUNDS = 8;
+  let CELL = 40;
+  const TOL_FACTOR = 0.42;
+
+  let game = {
+    diff: 'easy',
+    pairs: [],
+    idx: 0,
+    scores: [],
+    userGuess: null
+  };
+
+  let tpl = { verts: [], cx: 0, cy: 0 };    // template (fixed)
+  let mov = {                                 // movable shape
+    verts: [], cx: 0, cy: 0,
+    angle: 0, flipH: false, flipV: false
+  };
+  let movHome = { cx: 0, cy: 0 };            // initial movable position
+
+  let cvs, ctx, canvasW, canvasH;
+  let drag = { on: false, px: 0, py: 0, cx0: 0, cy0: 0 };
+  let matched = false;
+  let snapping = false;
+
+  // ── Math helpers ──────────────────────────────────────────────────────────
+  function centroid(v) {
+    return [
+      v.reduce((s, p) => s + p[0], 0) / v.length,
+      v.reduce((s, p) => s + p[1], 0) / v.length
+    ];
+  }
+
+  function bbox(v) {
+    const xs = v.map(p => p[0]), ys = v.map(p => p[1]);
+    return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) };
+  }
+
+  function d2(a, b) { return (a[0]-b[0])**2 + (a[1]-b[1])**2; }
+
+  function shuffle(a) {
+    const r = [...a];
+    for (let i = r.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [r[i], r[j]] = [r[j], r[i]];
+    }
+    return r;
+  }
+
+  // ── World vertices ────────────────────────────────────────────────────────
+  // Returns canvas-pixel vertices after all transforms.
+  function worldVerts(verts, cx, cy, angle, flipH, flipV) {
+    const [gcx, gcy] = centroid(verts);
+    const cos = Math.cos(angle), sin = Math.sin(angle);
+    return verts.map(([gx, gy]) => {
+      let dx = (gx - gcx) * CELL;
+      let dy = (gy - gcy) * CELL;
+      if (flipH) dx = -dx;
+      if (flipV) dy = -dy;
+      return [cx + dx * cos - dy * sin, cy + dx * sin + dy * cos];
+    });
+  }
+
+  function tplVerts() {
+    const [gcx, gcy] = centroid(tpl.verts);
+    return tpl.verts.map(([gx, gy]) => [
+      tpl.cx + (gx - gcx) * CELL,
+      tpl.cy + (gy - gcy) * CELL
+    ]);
+  }
+
+  function movVerts() {
+    return worldVerts(mov.verts, mov.cx, mov.cy, mov.angle, mov.flipH, mov.flipV);
+  }
+
+  // ── Hit test ─────────────────────────────────────────────────────────────
+  function inPoly(px, py, verts) {
+    let inside = false;
+    for (let i = 0, j = verts.length - 1; i < verts.length; j = i++) {
+      const xi = verts[i][0], yi = verts[i][1];
+      const xj = verts[j][0], yj = verts[j][1];
+      if (((yi > py) !== (yj > py)) &&
+          (px < (xj - xi) * (py - yi) / (yj - yi) + xi)) {
+        inside = !inside;
+      }
+    }
+    return inside;
+  }
+
+  // ── Congruence check ──────────────────────────────────────────────────────
+  function isCongruent() {
+    const va = tplVerts(), vb = movVerts();
+    if (va.length !== vb.length) return false;
+    const t2 = (CELL * TOL_FACTOR) ** 2;
+    return cycleMatch(va, vb, t2) || cycleMatch(va, [...vb].reverse(), t2);
+  }
+
+  function cycleMatch(a, b, t2) {
+    const n = a.length;
+    for (let off = 0; off < n; off++) {
+      let ok = true;
+      for (let i = 0; i < n; i++) {
+        if (d2(a[i], b[(i + off) % n]) > t2) { ok = false; break; }
+      }
+      if (ok) return true;
+    }
+    return false;
+  }
+
+  // ── Drawing ───────────────────────────────────────────────────────────────
+  function drawGrid() {
+    ctx.save();
+    ctx.strokeStyle = '#1a3050';
+    ctx.lineWidth = 0.5;
+    for (let x = 0; x <= canvasW; x += CELL) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvasH); ctx.stroke();
+    }
+    for (let y = 0; y <= canvasH; y += CELL) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvasW, y); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawPoly(verts, fill, stroke, lw, dash) {
+    if (!verts.length) return;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(verts[0][0], verts[0][1]);
+    for (let i = 1; i < verts.length; i++) ctx.lineTo(verts[i][0], verts[i][1]);
+    ctx.closePath();
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = lw;
+    if (dash) ctx.setLineDash(dash);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawScene(forceMatch) {
+    ctx.clearRect(0, 0, canvasW, canvasH);
+    drawGrid();
+
+    // Divider
+    ctx.save();
+    ctx.strokeStyle = '#2d4a6a';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(canvasW / 2, 0);
+    ctx.lineTo(canvasW / 2, canvasH);
+    ctx.stroke();
+    ctx.restore();
+
+    // Labels
+    ctx.save();
+    ctx.font = 'bold 11px system-ui';
+    ctx.fillStyle = '#475569';
+    ctx.textAlign = 'center';
+    ctx.fillText('VORLAGE', canvasW * 0.25, 14);
+    ctx.fillText('DEINE FIGUR', canvasW * 0.75, 14);
+    ctx.restore();
+
+    // Template (blue, dashed)
+    drawPoly(tplVerts(),
+      'rgba(59,130,246,0.12)', '#3b82f6', 2.5, [7, 4]);
+
+    // Movable
+    const ok = forceMatch || (matched && !snapping) || isCongruent();
+    drawPoly(movVerts(),
+      ok ? 'rgba(34,197,94,0.35)' : 'rgba(249,115,22,0.35)',
+      ok ? '#22c55e' : '#f97316',
+      2.5, null);
+  }
+
+  // ── Snap animation ────────────────────────────────────────────────────────
+  function snapAnim() {
+    snapping = true;
+    const sx = mov.cx, sy = mov.cy;
+    const tx = tpl.cx,  ty = tpl.cy;
+    const t0 = performance.now();
+    function step(now) {
+      const t = Math.min((now - t0) / 320, 1);
+      const e = 1 - (1 - t) * (1 - t);
+      mov.cx = sx + (tx - sx) * e;
+      mov.cy = sy + (ty - sy) * e;
+      drawScene(true);
+      if (t < 1) {
+        requestAnimationFrame(step);
+      } else {
+        mov.cx = tx; mov.cy = ty;
+        matched = true; snapping = false;
+        drawScene(true);
+        const hint = document.getElementById('verify-hint');
+        hint.innerHTML = '✓ Deckungsgleich! Du kannst jetzt auswerten.';
+        hint.style.color = '#22c55e';
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  // ── Canvas events ─────────────────────────────────────────────────────────
+  function canvasXY(e) {
+    const r = cvs.getBoundingClientRect();
+    return [
+      (e.clientX - r.left) * (canvasW / r.width),
+      (e.clientY - r.top)  * (canvasH / r.height)
+    ];
+  }
+
+  function onDown(e) {
+    if (matched || snapping) return;
+    const [px, py] = canvasXY(e);
+    if (inPoly(px, py, movVerts())) {
+      drag.on = true;
+      drag.px = px; drag.py = py;
+      drag.cx0 = mov.cx; drag.cy0 = mov.cy;
+      cvs.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    }
+  }
+
+  function onMove(e) {
+    if (!drag.on) return;
+    const [px, py] = canvasXY(e);
+    mov.cx = drag.cx0 + (px - drag.px);
+    mov.cy = drag.cy0 + (py - drag.py);
+    drawScene(false);
+    e.preventDefault();
+  }
+
+  function onUp() {
+    if (!drag.on) return;
+    drag.on = false;
+    if (!matched && isCongruent()) snapAnim();
+    else drawScene(false);
+  }
+
+  // ── Rotation helpers ──────────────────────────────────────────────────────
+  function setAngle(rad) {
+    mov.angle = rad;
+    document.getElementById('rot-slider').value =
+      Math.round(((rad * 180 / Math.PI) % 360 + 360) % 360);
+    if (!matched && isCongruent()) snapAnim(); else drawScene(false);
+  }
+
+  function nudgeAngle(deg) { setAngle(mov.angle + deg * Math.PI / 180); }
+
+  // ── Canvas resize ─────────────────────────────────────────────────────────
+  function resizeVerify() {
+    const wrap = document.getElementById('verify-canvas-wrap');
+    const dpr  = window.devicePixelRatio || 1;
+    const W = Math.min(wrap.clientWidth, 700);
+    const H = Math.min(Math.round(W * 0.56), 380);
+    canvasW = W; canvasH = H;
+    CELL = Math.floor(Math.min(W * 0.43, H * 0.82) / 8);
+    cvs.width  = Math.round(W * dpr);
+    cvs.height = Math.round(H * dpr);
+    cvs.style.width  = W + 'px';
+    cvs.style.height = H + 'px';
+    ctx = cvs.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  // ── Small preview canvases (guess phase) ──────────────────────────────────
+  function drawPreview(canvas, verts, angle, flipH) {
+    const W = 160, H = 160;
+    canvas.width = W; canvas.height = H;
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+
+    const ctx2 = canvas.getContext('2d');
+    ctx2.setTransform(1, 0, 0, 1, 0, 0);
+    ctx2.clearRect(0, 0, W, H);
+
+    // Auto-scale cell based on shape extents
+    const bb = bbox(verts);
+    const sw = bb.x1 - bb.x0, sh = bb.y1 - bb.y0;
+    const diag = Math.sqrt(sw * sw + sh * sh) || 1;
+    const cellPx = Math.floor(Math.min(W, H) * 0.62 / diag);
+
+    // Grid
+    ctx2.strokeStyle = '#1a3050';
+    ctx2.lineWidth = 0.5;
+    for (let x = 0; x < W; x += cellPx) {
+      ctx2.beginPath(); ctx2.moveTo(x, 0); ctx2.lineTo(x, H); ctx2.stroke();
+    }
+    for (let y = 0; y < H; y += cellPx) {
+      ctx2.beginPath(); ctx2.moveTo(0, y); ctx2.lineTo(W, y); ctx2.stroke();
+    }
+
+    const [gcx, gcy] = centroid(verts);
+    const cos = Math.cos(angle), sin = Math.sin(angle);
+    const wv = verts.map(([gx, gy]) => {
+      let dx = (gx - gcx) * cellPx;
+      let dy = (gy - gcy) * cellPx;
+      if (flipH) dx = -dx;
+      return [W / 2 + dx * cos - dy * sin, H / 2 + dx * sin + dy * cos];
+    });
+
+    ctx2.beginPath();
+    ctx2.moveTo(wv[0][0], wv[0][1]);
+    for (let i = 1; i < wv.length; i++) ctx2.lineTo(wv[i][0], wv[i][1]);
+    ctx2.closePath();
+    ctx2.fillStyle = 'rgba(148,163,184,0.2)';
+    ctx2.fill();
+    ctx2.strokeStyle = '#94a3b8';
+    ctx2.lineWidth = 2;
+    ctx2.stroke();
+  }
+
+  // ── Panel visibility ──────────────────────────────────────────────────────
+  function show(id) {
+    ['panel-setup','panel-guess','panel-verify','panel-feedback'].forEach(p => {
+      document.getElementById(p).hidden = (p !== id);
+    });
+  }
+
+  // ── Start round (guess phase) ─────────────────────────────────────────────
+  function startRound() {
+    const pair = game.pairs[game.idx];
+    matched = false; snapping = false;
+    game.userGuess = null;
+
+    const rotOpts = [30,45,60,90,120,135,150,180,210,225,240,270,315];
+    pair._rot  = rotOpts[Math.floor(Math.random() * rotOpts.length)] * Math.PI / 180;
+    pair._flip = Math.random() < 0.4;
+
+    show('panel-guess');
+    drawPreview(document.getElementById('cvs-a'), pair.a, 0, false);
+    drawPreview(document.getElementById('cvs-b'), pair.b, pair._rot, pair._flip);
+  }
+
+  // ── Start verify phase ────────────────────────────────────────────────────
+  function startVerify() {
+    const pair = game.pairs[game.idx];
+    matched = false; snapping = false;
+
+    tpl.verts = pair.a;
+    mov.verts  = pair.b;
+    mov.angle  = pair._rot;
+    mov.flipH  = pair._flip;
+    mov.flipV  = false;
+
+    show('panel-verify');
+    resizeVerify();
+
+    tpl.cx = canvasW * 0.25;
+    tpl.cy = canvasH * 0.52;
+    mov.cx = canvasW * 0.75;
+    mov.cy = canvasH * 0.52;
+    movHome.cx = mov.cx;
+    movHome.cy = mov.cy;
+
+    document.getElementById('rot-slider').value =
+      Math.round(((mov.angle * 180 / Math.PI) % 360 + 360) % 360);
+    const hint = document.getElementById('verify-hint');
+    hint.innerHTML = 'Lege die <span style="color:#f97316">orange</span> Figur auf die <span style="color:#60a5fa">blaue</span> Vorlage!';
+    hint.style.color = '';
+
+    drawScene(false);
+  }
+
+  // ── Feedback ──────────────────────────────────────────────────────────────
+  function showFeedback() {
+    const pair = game.pairs[game.idx];
+    const correct = (game.userGuess === pair.congruent);
+    game.scores.push({ guessed: game.userGuess, actual: pair.congruent, correct });
+    scormAfterRound(game.idx, game.userGuess, pair.congruent, correct);
+
+    document.getElementById('fb-icon').textContent = correct ? '✓' : '✗';
+    document.getElementById('fb-icon').className = 'feedback-icon ' + (correct ? 'correct' : 'wrong');
+    document.getElementById('fb-msg').textContent = correct ? 'Korrekt geschätzt!' : 'Leider falsch geschätzt.';
+    document.getElementById('fb-sub').textContent = pair.congruent
+      ? 'Diese beiden Figuren sind kongruent (deckungsgleich).'
+      : 'Diese beiden Figuren sind nicht kongruent.';
+
+    const n = game.scores.length;
+    const ok = game.scores.filter(s => s.correct).length;
+    document.getElementById('fb-score').textContent = ok + ' von ' + n + ' richtig geschätzt';
+
+    document.getElementById('fb-dots').innerHTML = game.scores.map(s =>
+      '<span class="score-dot ' + (s.correct ? 'ok' : 'fail') + '">●</span>'
+    ).join('');
+
+    const isLast = game.idx >= game.pairs.length - 1;
+    const btn = document.getElementById('btn-next');
+    btn.textContent = isLast ? 'Zum Ergebnis' : 'Nächste Aufgabe';
+
+    show('panel-feedback');
+  }
+
+  function showFinal() {
+    const n = game.scores.length;
+    const ok = game.scores.filter(s => s.correct).length;
+
+    document.getElementById('fb-icon').textContent = ok === n ? '🏆' : ok >= n * 0.75 ? '🎯' : '📐';
+    document.getElementById('fb-icon').className = 'feedback-icon correct';
+    document.getElementById('fb-msg').textContent = ok + ' von ' + n + ' richtig!';
+    document.getElementById('fb-sub').textContent = ok === n
+      ? 'Perfekt! Alle Figuren richtig eingeschätzt.'
+      : ok >= n * 0.5
+        ? 'Gut gemacht! Noch ein bisschen üben, dann klappt es noch besser.'
+        : 'Weiter üben – das Konzept der Kongruenz braucht etwas Zeit.';
+
+    document.getElementById('fb-score').textContent = '';
+    document.getElementById('fb-dots').innerHTML = game.scores.map(s =>
+      '<span class="score-dot ' + (s.correct ? 'ok' : 'fail') + '">●</span>'
+    ).join('');
+
+    const btn = document.getElementById('btn-next');
+    btn.textContent = 'Nochmal spielen';
+    btn.onclick = () => startGame();
+
+    scormCompleteSession();
+    show('panel-feedback');
+  }
+
+  // ── Start game ────────────────────────────────────────────────────────────
+  function startGame() {
+    game.pairs  = Array.from({ length: TOTAL_ROUNDS }, () => generateRandomPair(game.diff));
+    game.idx    = 0;
+    game.scores = [];
+    startRound();
+  }
+
+  // ── Wire up ───────────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    scormInitialize();
+    window.addEventListener('beforeunload', function () {
+      scormCommitPartial();
+    });
+
+    // Difficulty
+    document.querySelectorAll('.btn-diff').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.btn-diff').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        game.diff = btn.dataset.diff;
+      });
+    });
+
+    document.getElementById('btn-start').addEventListener('click', startGame);
+
+    // Guess
+    document.getElementById('btn-yes').addEventListener('click', () => {
+      game.userGuess = true; startVerify();
+    });
+    document.getElementById('btn-no').addEventListener('click', () => {
+      game.userGuess = false; startVerify();
+    });
+
+    // Verify canvas
+    cvs = document.getElementById('cvs-verify');
+    cvs.addEventListener('pointerdown',  onDown);
+    cvs.addEventListener('pointermove',  onMove);
+    cvs.addEventListener('pointerup',    onUp);
+    cvs.addEventListener('pointercancel', onUp);
+
+    // Rotation
+    document.getElementById('rot-slider').addEventListener('input', e => {
+      setAngle(parseInt(e.target.value, 10) * Math.PI / 180);
+    });
+    document.getElementById('btn-rot-n15').addEventListener('click', () => nudgeAngle(-15));
+    document.getElementById('btn-rot-n1').addEventListener('click',  () => nudgeAngle(-1));
+    document.getElementById('btn-rot-p1').addEventListener('click',  () => nudgeAngle(1));
+    document.getElementById('btn-rot-p15').addEventListener('click', () => nudgeAngle(15));
+
+    // Flip
+    document.getElementById('btn-flip-h').addEventListener('click', () => {
+      mov.flipH = !mov.flipH;
+      if (!matched && isCongruent()) snapAnim(); else drawScene(false);
+    });
+    document.getElementById('btn-flip-v').addEventListener('click', () => {
+      mov.flipV = !mov.flipV;
+      if (!matched && isCongruent()) snapAnim(); else drawScene(false);
+    });
+
+    // Reset movable
+    document.getElementById('btn-reset-mov').addEventListener('click', () => {
+      if (snapping) return;
+      matched = false;
+      mov.cx = movHome.cx; mov.cy = movHome.cy;
+      mov.angle = 0; mov.flipH = false; mov.flipV = false;
+      document.getElementById('rot-slider').value = 0;
+      const hint = document.getElementById('verify-hint');
+      hint.innerHTML = 'Lege die <span style="color:#f97316">orange</span> Figur auf die <span style="color:#60a5fa">blaue</span> Vorlage!';
+      hint.style.color = '';
+      drawScene(false);
+    });
+
+    // Evaluate
+    document.getElementById('btn-evaluate').addEventListener('click', showFeedback);
+
+    // Next round
+    document.getElementById('btn-next').addEventListener('click', function () {
+      game.idx++;
+      if (game.idx >= game.pairs.length) showFinal();
+      else startRound();
+    });
+
+    // Resize
+    window.addEventListener('resize', () => {
+      if (!document.getElementById('panel-verify').hidden) {
+        resizeVerify();
+        // Reposition
+        tpl.cx = canvasW * 0.25; tpl.cy = canvasH * 0.52;
+        if (!matched) {
+          movHome.cx = canvasW * 0.75; movHome.cy = canvasH * 0.52;
+        }
+        drawScene(matched);
+      }
+    });
+  });
+
+  })();
+  </script>
+</body>
+</html>
